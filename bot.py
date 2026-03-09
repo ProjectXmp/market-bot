@@ -127,6 +127,27 @@ def run_bot():
     if time.time() - last_post > 7200:
         post_tweet(generate_tweet(f"Quiet markets for now...\n{price_block}\nEyes open"), "quiet")
 
+# Demo post on startup
+print("Posting demo...")
+tickers = ["SPY", "QQQ"]
+lines = []
+for t in tickers:
+    try:
+        df = yf.Ticker(t).history(period="2d")
+        if len(df) < 1:
+            continue
+        price = df['Close'].iloc[-1]
+        change = ((price - df['Close'].iloc[-2]) / df['Close'].iloc[-2] * 100) if len(df) > 1 else 0
+        emoji = "📈" if change > 0 else "📉"
+        lines.append(f"{t} ${price:,.2f} {emoji} {change:+.2f}%")
+    except:
+        pass
+
+demo_content = "Market snapshot:\n" + "\n".join(lines)
+post_tweet(generate_tweet(demo_content), "market")
+print("Demo posted!")
+
+# Normal loop
 while True:
     run_bot()
     time.sleep(3600)
